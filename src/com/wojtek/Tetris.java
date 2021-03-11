@@ -2,15 +2,16 @@ package com.wojtek;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Random;
 
 
 public class Tetris extends JPanel {
 
     public static int pW;
-    static int rotation = 0;
-    private Timer timer = new Timer(1000, evt -> dropPiece());
-    private final Point[][][] Tetraminos = {
+    int orientation = 0;
+    private final Point[][][] tetrisBlocks = {
 
             {
                     {new Point(0, 1), new Point(1, 1), new Point(2, 1), new Point(3, 1)},
@@ -61,9 +62,10 @@ public class Tetris extends JPanel {
                     {new Point(1, 0), new Point(0, 1), new Point(1, 1), new Point(0, 2)}
             }
     };
-    public Point piecePlace;
-    private int[][] tablica;
-    private Integer currentPiece;
+    public Point blockPlace;
+    private int[][] table;
+    private int block;
+    private Timer timer = new Timer(1000, evt -> moveDown());
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -86,58 +88,96 @@ public class Tetris extends JPanel {
         frame.setLocationRelativeTo(null);
         Tetris tetris = new Tetris();
         frame.add(tetris);
-        tetris.zerowanieTablicy();
+        tetris.resetTable();
+        KeyListener keyListener = new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+
+            }
+
+            @Override
+            public void keyPressed(KeyEvent e) {
+                switch (e.getKeyCode()) {
+                    case KeyEvent.VK_DOWN:
+                        tetris.moveDown();
+                        break;
+                    case KeyEvent.VK_LEFT:
+                        tetris.moveToSide(-1);
+                        break;
+                    case KeyEvent.VK_RIGHT:
+                        tetris.moveToSide(+1);
+                        break;
+                    case KeyEvent.VK_SPACE:
+                        tetris.rotate();
+                        break;
+                }
+            }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+
+            }
+        };
+        frame.addKeyListener(keyListener);
 
 
     }
 
-    private void move(int i) {
-        if (collisionTest(piecePlace.x + i, piecePlace.y, rotation)) {
-            piecePlace.x += i;
+    private void moveToSide(int i) {
+        for (Point p : tetrisBlocks[block][orientation]) {
+            table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
+        }
+        if (collisionTest(blockPlace.x + i, blockPlace.y, orientation)) {
+            blockPlace.x += i;
+
+        }
+        for (Point p : tetrisBlocks[block][orientation]) {
+            table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
         }
         repaint();
 
     }
 
 
-    private void dropPiece() {
-        //if (collisionTest(piecePlace.x, piecePlace.y + 1, rotation)) {
-        for (Point p : Tetraminos[currentPiece][rotation]) {
-            tablica[p.x + piecePlace.x][p.y + piecePlace.y] = 0;
-        }
-        piecePlace.y += 1;
+    private void moveDown() {
 
-        for (Point p : Tetraminos[currentPiece][rotation]) {
-            tablica[p.x + piecePlace.x][p.y + piecePlace.y] = 5;
+        for (Point p : tetrisBlocks[block][orientation]) {
+            table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
         }
 
-        // } else {
-        //     fixToWell();
-        // }
+        if (collisionTest(blockPlace.x, blockPlace.y + 1, orientation)) {
+            blockPlace.y += 1;
+            for (Point p : tetrisBlocks[block][orientation]) {
+                table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
+            }
+
+        } else {
+            placeOntoBottom();
+        }
 
         repaint();
 
     }
 
 
-    private void zerowanieTablicy() {
-        tablica = new int[12][22];
+    private void resetTable() {
+        table = new int[12][22];
         for (int i = 0; i < 11; i++) {
             for (int j = 0; j < 21; j++) {
-                tablica[i][j] = 0;
+                table[i][j] = 0;
             }
         }
-        //ramka
+
         for (int ii = 0; ii < 11; ii++) {
-            tablica[ii][0] = 1;
-            tablica[ii][21] = 1;
+            table[ii][0] = 1;
+            table[ii][21] = 1;
         }
         for (int ij = 0; ij < 22; ij++) {
-            tablica[0][ij] = 1;
-            tablica[11][ij] = 1;
+            table[0][ij] = 1;
+            table[11][ij] = 1;
         }
 
-        newPiece();
+        blockNew();
         timer.start();
 
     }
@@ -147,7 +187,7 @@ public class Tetris extends JPanel {
 
         for (int i = 0; i < 12; i++) {
             for (int j = 0; j < 22; j++) {
-                switch (tablica[i][j]) {
+                switch (table[i][j]) {
                     case 0 -> {
                         g.setColor(Color.GRAY);
                         g.fillRect(i * pW, j * pW, pW, pW);
@@ -184,88 +224,76 @@ public class Tetris extends JPanel {
                         g.setColor(Color.BLUE);
                         g.fillRect(i * pW, j * pW, pW, pW);
                     }
-
-
                 }
-
             }
         }
-        drawPiece();
+
 
     }
 
-    public void newPiece() {
-        piecePlace = new Point(4, 2);
-        rotation = 0;
+    public void blockNew() {
+        blockPlace = new Point(5, 1);
+
         Random generator = new Random();
-        currentPiece = generator.nextInt(6);
-
+        block = generator.nextInt(6);
+        orientation = generator.nextInt(3);
     }
 
-    private void drawPiece() {
-        for (Point p : Tetraminos[currentPiece][rotation]) {
-            tablica[p.x + piecePlace.x][p.y + piecePlace.y] = 5;
+    private void blockDraw() {
+
+        for (Point p : tetrisBlocks[block][orientation]) {
+            table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
         }
+
+
         repaint();
+
+
     }
 
-    private boolean collisionTest(int x, int y, int rotation) {
-        for (Point p : Tetraminos[currentPiece][rotation]) {
-            if (tablica[p.x + x][p.y + y] == 0) {
+    private void gameOver() {
+
+
+    }
+
+    private boolean collisionTest(int x, int y, int orientation) {
+
+        for (Point p : tetrisBlocks[block][orientation]) {
+            if (table[p.x + x][p.y + y] != 0) {
                 return false;
             }
         }
         return true;
     }
 
-    public void rotate(int i) {
-        int newRotation = (rotation + i) % 4;
-        if (newRotation < 0) {
-            newRotation = 3;
+    public void rotate() {
+        for (Point p : tetrisBlocks[block][orientation]) {
+            table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
         }
-        if (collisionTest(piecePlace.x, piecePlace.y, newRotation)) {
-            rotation = newRotation;
+        int newOrientation = orientation+1;
+        if (newOrientation >3){
+            newOrientation=0;
         }
+        if (collisionTest(blockPlace.x, blockPlace.y, newOrientation)) {
+            orientation = newOrientation;
+        }
+
+        blockDraw();
         repaint();
     }
 
-    public void fixToWell() {
-        for (Point p : Tetraminos[currentPiece][rotation]) {
-            tablica[piecePlace.x + p.x][piecePlace.y + p.y] = 2;
-        }
-        clearRows();
-        newPiece();
-    }
-
-    public void deleteRow(int row) {
-        for (int j = row - 1; j > 0; j--) {
-            for (int i = 1; i < 11; i++) {
-                tablica[i][j + 1] = tablica[i][j];
-            }
-        }
-    }
-
-    public void clearRows() {
-        boolean gap;
-
-
-        for (int j = 21; j > 0; j--) {
-            gap = false;
-            for (int i = 1; i < 11; i++) {
-                if (tablica[i][j] == 1) {
-                    gap = true;
-                    break;
-                }
-            }
-            if (!gap) {
-                deleteRow(j);
-                j += 1;
-
-            }
+    public void placeOntoBottom() {
+        for (Point p : tetrisBlocks[block][orientation]) {
+            table[blockPlace.x + p.x][blockPlace.y + p.y] = block + 2;
         }
 
+        blockNew();
+        if (collisionTest(blockPlace.x, blockPlace.y, orientation)) {
+            blockDraw();
+        }
 
     }
+
 
 }
 
