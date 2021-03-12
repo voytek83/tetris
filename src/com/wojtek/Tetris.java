@@ -65,6 +65,9 @@ public class Tetris extends JPanel {
     int orientation = 0;
     private int[][] table;
     private int block;
+    private boolean game = true;
+    private long score = 0;
+    private long scoreCombo = 0;
     private final Timer timer = new Timer(1000, evt -> moveDown());
 
     public static void main(String[] args) {
@@ -108,44 +111,44 @@ public class Tetris extends JPanel {
         };
         frame.addKeyListener(keyListener);
 
-
     }
 
     private void moveToSide(int i) {
-        for (Point p : tetrisBlocks[block][orientation]) {
-            table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
-        }
-        if (collisionTest(blockPlace.x + i, blockPlace.y, orientation)) {
-            blockPlace.x += i;
+        if (game) {
+            for (Point p : tetrisBlocks[block][orientation]) {
+                table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
+            }
+            if (collisionTest(blockPlace.x + i, blockPlace.y, orientation)) {
+                blockPlace.x += i;
 
+            }
+            for (Point p : tetrisBlocks[block][orientation]) {
+                table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
+            }
+            repaint();
         }
-        for (Point p : tetrisBlocks[block][orientation]) {
-            table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
-        }
-        repaint();
-
     }
 
 
     private void moveDown() {
-
-
-        for (Point p : tetrisBlocks[block][orientation]) {
-            table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
-        }
-
-        if (collisionTest(blockPlace.x, blockPlace.y + 1, orientation)) {
-            blockPlace.y += 1;
+        if (game) {
             for (Point p : tetrisBlocks[block][orientation]) {
-                table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
+                table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
             }
 
-        } else {
-            placeOntoBottom();
+            if (collisionTest(blockPlace.x, blockPlace.y + 1, orientation)) {
+                blockPlace.y += 1;
+                score += 1;
+                for (Point p : tetrisBlocks[block][orientation]) {
+                    table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
+                }
+
+            } else {
+                placeOntoBottom();
+            }
+
+            repaint();
         }
-
-        repaint();
-
     }
 
 
@@ -168,6 +171,7 @@ public class Tetris extends JPanel {
 
         blockNew();
         timer.start();
+        game = true;
 
     }
 
@@ -216,33 +220,40 @@ public class Tetris extends JPanel {
                 }
             }
         }
-
-
+        g.setColor(Color.RED);
+        g.drawString("SCORE: " + score, pW * 4, pW / 2);
+        if (!game) {
+            g.setColor(Color.WHITE);
+            g.drawString("GAME OVER", pW * 5, pW * 10);
+        }
     }
 
     private void blockNew() {
+        if (game) {
+            blockPlace = new Point(5, 1);
+            Random generator = new Random();
+            block = generator.nextInt(6);
+            orientation = generator.nextInt(3);
 
-        blockPlace = new Point(5, 1);
-
-        Random generator = new Random();
-        block = generator.nextInt(6);
-        orientation = generator.nextInt(3);
+            if (!collisionTest(blockPlace.x, blockPlace.y, orientation)) {
+                gameOver();
+            }
+        }
     }
 
     private void blockDraw() {
-
-
-        for (Point p : tetrisBlocks[block][orientation]) {
-            table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
+        if (game) {
+            for (Point p : tetrisBlocks[block][orientation]) {
+                table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
+            }
+            repaint();
+            scoreCombo = 50;
         }
-
-
-        repaint();
-
-
     }
 
     private void gameOver() {
+        timer.stop();
+        game = false;
 
 
     }
@@ -258,34 +269,33 @@ public class Tetris extends JPanel {
     }
 
     private void rotate() {
-        for (Point p : tetrisBlocks[block][orientation]) {
-            table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
-        }
-        int newOrientation = orientation + 1;
-        if (newOrientation > 3) {
-            newOrientation = 0;
-        }
-        if (collisionTest(blockPlace.x, blockPlace.y, newOrientation)) {
-            orientation = newOrientation;
+        if (game) {
+            for (Point p : tetrisBlocks[block][orientation]) {
+                table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
+            }
+            int newOrientation = orientation + 1;
+            if (newOrientation > 3) {
+                newOrientation = 0;
+            }
+            if (collisionTest(blockPlace.x, blockPlace.y, newOrientation)) {
+                orientation = newOrientation;
+            }
+
+            blockDraw();
+            repaint();
         }
 
-        blockDraw();
-        repaint();
     }
 
     private void placeOntoBottom() {
         for (Point p : tetrisBlocks[block][orientation]) {
             table[blockPlace.x + p.x][blockPlace.y + p.y] = block + 2;
         }
-
+        score += 5;
         checkForFullRows();
 
         blockNew();
         blockDraw();
-        if (collisionTest(blockPlace.x, blockPlace.y, orientation)) {
-
-
-        }
 
 
     }
@@ -297,6 +307,7 @@ public class Tetris extends JPanel {
                     if (table[g][h] != 0) {
                         if (g == 10) {
                             deleteRow(h);
+
                         }
 
                     }
@@ -315,6 +326,8 @@ public class Tetris extends JPanel {
                 table[g][i] = table[g][i - 1];
             }
         }
+        score += scoreCombo;
+        scoreCombo *= 2;
     }
 }
 
