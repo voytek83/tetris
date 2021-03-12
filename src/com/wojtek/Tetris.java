@@ -10,7 +10,6 @@ import java.util.Random;
 public class Tetris extends JPanel {
 
     public static int pW;
-    int orientation = 0;
     private final Point[][][] tetrisBlocks = {
 
             {
@@ -63,16 +62,13 @@ public class Tetris extends JPanel {
             }
     };
     public Point blockPlace;
+    int orientation = 0;
     private int[][] table;
     private int block;
-    private Timer timer = new Timer(1000, evt -> moveDown());
+    private final Timer timer = new Timer(1000, evt -> moveDown());
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                createAndShowGUI();
-            }
-        });
+        SwingUtilities.invokeLater(Tetris::createAndShowGUI);
     }
 
     private static void createAndShowGUI() {
@@ -98,18 +94,10 @@ public class Tetris extends JPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
-                    case KeyEvent.VK_DOWN:
-                        tetris.moveDown();
-                        break;
-                    case KeyEvent.VK_LEFT:
-                        tetris.moveToSide(-1);
-                        break;
-                    case KeyEvent.VK_RIGHT:
-                        tetris.moveToSide(+1);
-                        break;
-                    case KeyEvent.VK_SPACE:
-                        tetris.rotate();
-                        break;
+                    case KeyEvent.VK_DOWN -> tetris.moveDown();
+                    case KeyEvent.VK_LEFT -> tetris.moveToSide(-1);
+                    case KeyEvent.VK_RIGHT -> tetris.moveToSide(+1);
+                    case KeyEvent.VK_SPACE -> tetris.rotate();
                 }
             }
 
@@ -140,6 +128,7 @@ public class Tetris extends JPanel {
 
 
     private void moveDown() {
+
 
         for (Point p : tetrisBlocks[block][orientation]) {
             table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
@@ -231,7 +220,8 @@ public class Tetris extends JPanel {
 
     }
 
-    public void blockNew() {
+    private void blockNew() {
+
         blockPlace = new Point(5, 1);
 
         Random generator = new Random();
@@ -240,6 +230,7 @@ public class Tetris extends JPanel {
     }
 
     private void blockDraw() {
+
 
         for (Point p : tetrisBlocks[block][orientation]) {
             table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
@@ -266,13 +257,13 @@ public class Tetris extends JPanel {
         return true;
     }
 
-    public void rotate() {
+    private void rotate() {
         for (Point p : tetrisBlocks[block][orientation]) {
             table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
         }
-        int newOrientation = orientation+1;
-        if (newOrientation >3){
-            newOrientation=0;
+        int newOrientation = orientation + 1;
+        if (newOrientation > 3) {
+            newOrientation = 0;
         }
         if (collisionTest(blockPlace.x, blockPlace.y, newOrientation)) {
             orientation = newOrientation;
@@ -282,20 +273,52 @@ public class Tetris extends JPanel {
         repaint();
     }
 
-    public void placeOntoBottom() {
+    private void placeOntoBottom() {
         for (Point p : tetrisBlocks[block][orientation]) {
             table[blockPlace.x + p.x][blockPlace.y + p.y] = block + 2;
         }
 
+        checkForFullRows();
+
         blockNew();
+        blockDraw();
         if (collisionTest(blockPlace.x, blockPlace.y, orientation)) {
-            blockDraw();
+
+
+        }
+
+
+    }
+
+    private void checkForFullRows() {
+        for (int h = 20; h > 0; h--) {
+            for (int g = 1; g < 11; g++) {
+                if (table[g][h] != 0) {
+                    if (table[g][h] != 0) {
+                        if (g == 10) {
+                            deleteRow(h);
+                        }
+
+                    }
+                } else {
+                    break;
+                }
+            }
         }
 
     }
 
 
+    private void deleteRow(int row) {
+        for (int i = row; i > 1; i--) {
+            for (int g = 1; g < 11; g++) {
+                table[g][i] = table[g][i - 1];
+            }
+        }
+    }
 }
+
+
 
 
 
