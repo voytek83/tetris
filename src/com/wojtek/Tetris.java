@@ -9,6 +9,10 @@ import java.util.Random;
 
 public class Tetris extends JPanel {
 
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
     public static int pW;
     private final Point[][][] tetrisBlocks = {
 
@@ -61,6 +65,7 @@ public class Tetris extends JPanel {
                     {new Point(1, 0), new Point(0, 1), new Point(1, 1), new Point(0, 2)}
             }
     };
+
     public Point blockPlace;
     int orientation = 0;
     private int[][] table;
@@ -304,13 +309,11 @@ public class Tetris extends JPanel {
         for (int h = 20; h > 0; h--) {
             for (int g = 1; g < 11; g++) {
                 if (table[g][h] != 0) {
-                    if (table[g][h] != 0) {
-                        if (g == 10) {
-                            deleteRow(h);
 
-                        }
-
+                    if (g == 10) {
+                        deleteRow(h);
                     }
+
                 } else {
                     break;
                 }
@@ -328,6 +331,7 @@ public class Tetris extends JPanel {
         }
         score += scoreCombo;
         scoreCombo *= 2;
+        checkForFullRows();
     }
 }
 
