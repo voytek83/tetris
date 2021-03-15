@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.Serial;
 import java.util.Random;
 
 
@@ -12,6 +13,7 @@ public class Tetris extends JPanel {
     /**
      *
      */
+    @Serial
     private static final long serialVersionUID = 1L;
     public static int pW;
     private final Point[][][] tetrisBlocks = {
@@ -65,15 +67,19 @@ public class Tetris extends JPanel {
                     {new Point(1, 0), new Point(0, 1), new Point(1, 1), new Point(0, 2)}
             }
     };
-
+    private final Timer timer;
+    private final int timerDelay = 1000;
     public Point blockPlace;
     int orientation = 0;
     private int[][] table;
     private int block;
     private boolean game = true;
-    private long score = 0;
+    private long score = 1;
     private long scoreCombo = 0;
-    private final Timer timer = new Timer(1000, evt -> moveDown());
+
+    public Tetris() {
+        timer = new Timer(timerDelay, evt -> moveDown());
+    }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Tetris::createAndShowGUI);
@@ -227,6 +233,8 @@ public class Tetris extends JPanel {
         }
         g.setColor(Color.RED);
         g.drawString("SCORE: " + score, pW * 4, pW / 2);
+
+
         if (!game) {
             g.setColor(Color.WHITE);
             g.drawString("GAME OVER", pW * 5, pW * 10);
@@ -333,6 +341,8 @@ public class Tetris extends JPanel {
         scoreCombo *= 2;
         checkForFullRows();
     }
+
+
 }
 
 
