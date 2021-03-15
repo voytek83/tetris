@@ -68,7 +68,6 @@ public class Tetris extends JPanel {
             }
     };
     private final Timer timer;
-    private final int timerDelay = 1000;
     public Point blockPlace;
     int orientation = 0;
     private int[][] table;
@@ -78,6 +77,7 @@ public class Tetris extends JPanel {
     private long scoreCombo = 0;
 
     public Tetris() {
+        int timerDelay = 1000;
         timer = new Timer(timerDelay, evt -> moveDown());
     }
 
