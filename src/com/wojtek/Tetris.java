@@ -15,8 +15,8 @@ public class Tetris extends JPanel {
      */
     @Serial
     private static final long serialVersionUID = 1L;
-    public static int pW;
-    private final Point[][][] tetrisBlocks = {
+    public static int pW;//raczej nie ma sensu nazywac czegos tak skrótowo pW itp...lepiej nadac dluga nazwe, to nic nie szkodzi, byleby od razu bylo wiadomo co to
+    private final Point[][][] tetrisBlocks = {//takie cos to sie prosi do wydzielenia do osobnej klasy np gdzie masz odseparowane definicje klockow
 
             {
                     {new Point(0, 1), new Point(1, 1), new Point(2, 1), new Point(3, 1)},
@@ -77,7 +77,7 @@ public class Tetris extends JPanel {
     private long scoreCombo = 0;
 
     public Tetris() {
-        int timerDelay = 1000;
+        int timerDelay = 1000;//ciekawe by moglobyc jakby to przekazywac np jako parametr startowy, albo w jakiejs innej formie, wtedy mozna tym levele ograc
         timer = new Timer(timerDelay, evt -> moveDown());
     }
 
@@ -88,7 +88,7 @@ public class Tetris extends JPanel {
     private static void createAndShowGUI() {
         JFrame frame = new JFrame("Tetris");
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        pW = screenSize.height / 30;
+        pW = screenSize.height / 30;//ta 30tka to zla praktyka, to tzw magic number czyli...liczba z dupy. powinienes miec pole w klasie np int sizeOfSth, analogicznych rzeczy tego typu jet wiecej tu
         int frameHeight = pW * 23 - 5;
         int frameWidth = pW * 12 + 14;
 
@@ -127,7 +127,7 @@ public class Tetris extends JPanel {
     private void moveToSide(int i) {
         if (game) {
             for (Point p : tetrisBlocks[block][orientation]) {
-                table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
+w                table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
             }
             if (collisionTest(blockPlace.x + i, blockPlace.y, orientation)) {
                 blockPlace.x += i;
@@ -350,3 +350,4 @@ public class Tetris extends JPanel {
 
 
 
+//taka pierdola ale te linie puste na koncu to nie potrzebne ;p
