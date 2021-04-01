@@ -80,6 +80,9 @@ public class Tetris extends JPanel {
                 blockPlace.x += i;
 
             }
+            for (Point p : tetrisBlocks.tetrisBlocks[block][orientation]) {
+                table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
+            }
             repaint();
         }
     }
