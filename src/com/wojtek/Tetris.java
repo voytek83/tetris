@@ -25,30 +25,39 @@ public class Tetris extends JPanel {
     private boolean game = true;
     private long score = 1;
     private long scoreCombo = 0;
+    private static final int fieldSizeModifier = 30;
+    private static final int numberRows = 23;
+    private static final int numberColumns = 12;
+    int gameLevel = 0;
 
-    public Tetris() {
-        int timerDelay = 500;//ciekawe by moglobyc jakby to przekazywac np jako parametr startowy, albo w jakiejs innej formie, wtedy mozna tym levele ograc
+
+    public Tetris(int timerDelay) {
+        //ciekawe by moglobyc jakby to przekazywac np jako parametr startowy, albo w jakiejs innej formie, wtedy mozna tym levele ograc
         timer = new Timer(timerDelay, evt -> moveDown());
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(Tetris::createAndShowGUI);
+
+
     }
 
-    private static void createAndShowGUI() {
+
+    private static void createAndShowGUI(int timerDelay) {
         JFrame frame = new JFrame("Tetris");
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        poleWymiar = screenSize.height / 30;//ta 30tka to zla praktyka, to tzw magic number czyli...liczba z dupy. powinienes miec pole w klasie np int sizeOfSth, analogicznych rzeczy tego typu jet wiecej tu
-        int frameHeight = poleWymiar * 23 - 5;
-        int frameWidth = poleWymiar * 12 + 14;
+        poleWymiar = screenSize.height / fieldSizeModifier;//ta 30tka to zla praktyka, to tzw magic number czyli...liczba z dupy. powinienes miec pole w klasie np int sizeOfSth, analogicznych rzeczy tego typu jet wiecej tu
+        int frameHeight = poleWymiar * (numberRows) - 5; // +2
+        int frameWidth = poleWymiar * (numberColumns) + 14; // 12 pól + margines ramki
 
         frame.setVisible(true);
         frame.setSize(frameWidth, frameHeight);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
-        Tetris tetris = new Tetris();
+        Tetris tetris = new Tetris(timerDelay);
         frame.add(tetris);
         tetris.resetTable();
+
+
         KeyListener keyListener = new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {
@@ -110,7 +119,7 @@ public class Tetris extends JPanel {
 
 
     private void resetTable() {
-        table = new int[12][22];
+        table = new int[numberColumns][numberRows];
         for (int i = 0; i < 11; i++) {
             for (int j = 0; j < 21; j++) {
                 table[i][j] = 0;
@@ -179,6 +188,10 @@ public class Tetris extends JPanel {
         g.setColor(Color.RED);
         g.drawString("SCORE: " + score, poleWymiar * 4, poleWymiar / 2);
 
+        if (score > 1000) {
+            timer.stop();
+            gameLevel = 1;
+        }
 
         if (!game) {
             g.setColor(Color.WHITE);
@@ -281,4 +294,13 @@ public class Tetris extends JPanel {
         scoreCombo *= 2;
         checkForFullRows();
     }
+
+    private void timerRun(int timerDelay) {
+        if (score < 1000) {
+            SwingUtilities.invokeLater(() -> createAndShowGUI(1000));
+        } else
+    }
+
+
+}
 }
