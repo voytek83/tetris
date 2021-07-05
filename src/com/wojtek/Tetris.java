@@ -2,10 +2,11 @@ package com.wojtek;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.io.Serial;
 import java.util.Random;
+
+import static com.wojtek.TetrisGui.fieldSize;
+import static com.wojtek.TetrisGui.score;
 
 
 public class Tetris extends JPanel {
@@ -15,125 +16,38 @@ public class Tetris extends JPanel {
      */
     @Serial
     private static final long serialVersionUID = 1L;
-    public static int pW;//raczej nie ma sensu nazywac czegos tak skrótowo pW itp...lepiej nadac dluga nazwe, to nic nie szkodzi, byleby od razu bylo wiadomo co to
-    private final Point[][][] tetrisBlocks = {//takie cos to sie prosi do wydzielenia do osobnej klasy np gdzie masz odseparowane definicje klockow
-
-            {
-                    {new Point(0, 1), new Point(1, 1), new Point(2, 1), new Point(3, 1)},
-                    {new Point(1, 0), new Point(1, 1), new Point(1, 2), new Point(1, 3)},
-                    {new Point(0, 1), new Point(1, 1), new Point(2, 1), new Point(3, 1)},
-                    {new Point(1, 0), new Point(1, 1), new Point(1, 2), new Point(1, 3)}
-            },
-
-            {
-                    {new Point(0, 1), new Point(1, 1), new Point(2, 1), new Point(2, 0)},
-                    {new Point(1, 0), new Point(1, 1), new Point(1, 2), new Point(2, 2)},
-                    {new Point(0, 1), new Point(1, 1), new Point(2, 1), new Point(0, 2)},
-                    {new Point(1, 0), new Point(1, 1), new Point(1, 2), new Point(0, 0)}
-            },
-
-            {
-                    {new Point(0, 1), new Point(1, 1), new Point(2, 1), new Point(2, 2)},
-                    {new Point(1, 0), new Point(1, 1), new Point(1, 2), new Point(0, 2)},
-                    {new Point(0, 1), new Point(1, 1), new Point(2, 1), new Point(0, 0)},
-                    {new Point(1, 0), new Point(1, 1), new Point(1, 2), new Point(2, 0)}
-            },
-
-            {
-                    {new Point(0, 0), new Point(0, 1), new Point(1, 0), new Point(1, 1)},
-                    {new Point(0, 0), new Point(0, 1), new Point(1, 0), new Point(1, 1)},
-                    {new Point(0, 0), new Point(0, 1), new Point(1, 0), new Point(1, 1)},
-                    {new Point(0, 0), new Point(0, 1), new Point(1, 0), new Point(1, 1)}
-            },
-
-            {
-                    {new Point(1, 0), new Point(2, 0), new Point(0, 1), new Point(1, 1)},
-                    {new Point(0, 0), new Point(0, 1), new Point(1, 1), new Point(1, 2)},
-                    {new Point(1, 0), new Point(2, 0), new Point(0, 1), new Point(1, 1)},
-                    {new Point(0, 0), new Point(0, 1), new Point(1, 1), new Point(1, 2)}
-            },
-
-            {
-                    {new Point(1, 0), new Point(0, 1), new Point(1, 1), new Point(2, 1)},
-                    {new Point(1, 0), new Point(0, 1), new Point(1, 1), new Point(1, 2)},
-                    {new Point(0, 1), new Point(1, 1), new Point(2, 1), new Point(1, 2)},
-                    {new Point(1, 0), new Point(1, 1), new Point(2, 1), new Point(1, 2)}
-            },
-
-            {
-                    {new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(2, 1)},
-                    {new Point(1, 0), new Point(0, 1), new Point(1, 1), new Point(0, 2)},
-                    {new Point(0, 0), new Point(1, 0), new Point(1, 1), new Point(2, 1)},
-                    {new Point(1, 0), new Point(0, 1), new Point(1, 1), new Point(0, 2)}
-            }
-    };
     private final Timer timer;
     public Point blockPlace;
     int orientation = 0;
     private int[][] table;
     private int block;
-    private boolean game = true;
-    private long score = 1;
+    public static int level = 1;
     private long scoreCombo = 0;
+    private static boolean game = true;
 
-    public Tetris() {
-        int timerDelay = 1000;//ciekawe by moglobyc jakby to przekazywac np jako parametr startowy, albo w jakiejs innej formie, wtedy mozna tym levele ograc
+    public Tetris(int timerDelay) {
+
         timer = new Timer(timerDelay, evt -> moveDown());
+
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(Tetris::createAndShowGUI);
-    }
+        TetrisGui tetrisGui = new TetrisGui(level);
 
-    private static void createAndShowGUI() {
-        JFrame frame = new JFrame("Tetris");
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        pW = screenSize.height / 30;//ta 30tka to zla praktyka, to tzw magic number czyli...liczba z dupy. powinienes miec pole w klasie np int sizeOfSth, analogicznych rzeczy tego typu jet wiecej tu
-        int frameHeight = pW * 23 - 5;
-        int frameWidth = pW * 12 + 14;
-
-        frame.setVisible(true);
-        frame.setSize(frameWidth, frameHeight);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        frame.setLocationRelativeTo(null);
-        Tetris tetris = new Tetris();
-        frame.add(tetris);
-        tetris.resetTable();
-        KeyListener keyListener = new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-                switch (e.getKeyCode()) {
-                    case KeyEvent.VK_DOWN -> tetris.moveDown();
-                    case KeyEvent.VK_LEFT -> tetris.moveToSide(-1);
-                    case KeyEvent.VK_RIGHT -> tetris.moveToSide(+1);
-                    case KeyEvent.VK_SPACE -> tetris.rotate();
-                }
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-
-            }
-        };
-        frame.addKeyListener(keyListener);
 
     }
 
-    private void moveToSide(int i) {
+
+    public void moveToSide(int i) {
         if (game) {
-            for (Point p : tetrisBlocks[block][orientation]) {
+            for (Point p : Tetraminos.tetrisBlocks[block][orientation]) {
                 table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
             }
             if (collisionTest(blockPlace.x + i, blockPlace.y, orientation)) {
                 blockPlace.x += i;
 
             }
-            for (Point p : tetrisBlocks[block][orientation]) {
+            for (Point p : Tetraminos.tetrisBlocks[block][orientation]) {
                 table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
             }
             repaint();
@@ -141,16 +55,20 @@ public class Tetris extends JPanel {
     }
 
 
-    private void moveDown() {
+    public void moveDown() {
+
+
         if (game) {
-            for (Point p : tetrisBlocks[block][orientation]) {
+
+
+            for (Point p : Tetraminos.tetrisBlocks[block][orientation]) {
                 table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
             }
 
             if (collisionTest(blockPlace.x, blockPlace.y + 1, orientation)) {
                 blockPlace.y += 1;
                 score += 1;
-                for (Point p : tetrisBlocks[block][orientation]) {
+                for (Point p : Tetraminos.tetrisBlocks[block][orientation]) {
                     table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
                 }
 
@@ -163,7 +81,7 @@ public class Tetris extends JPanel {
     }
 
 
-    private void resetTable() {
+    public void resetTable() {
         table = new int[12][22];
         for (int i = 0; i < 11; i++) {
             for (int j = 0; j < 21; j++) {
@@ -191,58 +109,59 @@ public class Tetris extends JPanel {
 
         for (int i = 0; i < 12; i++) {
             for (int j = 0; j < 22; j++) {
-                switch (table[i][j]) {
+                switch ( table[i][j] ) {
                     case 0 -> {
                         g.setColor(Color.GRAY);
-                        g.fillRect(i * pW, j * pW, pW, pW);
+                        g.fillRect(i * fieldSize, j * fieldSize, fieldSize, fieldSize);
                     }
                     case 1 -> {
                         g.setColor(Color.DARK_GRAY);
-                        g.fillRect(i * pW, j * pW, pW, pW);
+                        g.fillRect(i * fieldSize, j * fieldSize, fieldSize, fieldSize);
                     }
                     case 2 -> {
                         g.setColor(Color.GREEN);
-                        g.fillRect(i * pW, j * pW, pW, pW);
+                        g.fillRect(i * fieldSize, j * fieldSize, fieldSize, fieldSize);
                     }
                     case 3 -> {
                         g.setColor(Color.YELLOW);
-                        g.fillRect(i * pW, j * pW, pW, pW);
+                        g.fillRect(i * fieldSize, j * fieldSize, fieldSize, fieldSize);
                     }
                     case 4 -> {
                         g.setColor(Color.RED);
-                        g.fillRect(i * pW, j * pW, pW, pW);
+                        g.fillRect(i * fieldSize, j * fieldSize, fieldSize, fieldSize);
                     }
                     case 5 -> {
                         g.setColor(Color.ORANGE);
-                        g.fillRect(i * pW, j * pW, pW, pW);
+                        g.fillRect(i * fieldSize, j * fieldSize, fieldSize, fieldSize);
                     }
                     case 6 -> {
                         g.setColor(Color.CYAN);
-                        g.fillRect(i * pW, j * pW, pW, pW);
+                        g.fillRect(i * fieldSize, j * fieldSize, fieldSize, fieldSize);
                     }
                     case 7 -> {
                         g.setColor(Color.MAGENTA);
-                        g.fillRect(i * pW, j * pW, pW, pW);
+                        g.fillRect(i * fieldSize, j * fieldSize, fieldSize, fieldSize);
                     }
                     case 8 -> {
                         g.setColor(Color.BLUE);
-                        g.fillRect(i * pW, j * pW, pW, pW);
+                        g.fillRect(i * fieldSize, j * fieldSize, fieldSize, fieldSize);
                     }
                 }
             }
         }
         g.setColor(Color.RED);
-        g.drawString("SCORE: " + score, pW * 4, pW / 2);
+        g.drawString("SCORE: " + score, fieldSize * 4, fieldSize / 2);
 
 
         if (!game) {
             g.setColor(Color.WHITE);
-            g.drawString("GAME OVER", pW * 5, pW * 10);
+            g.drawString("GAME OVER", fieldSize * 5, fieldSize * 10);
         }
     }
 
-    private void blockNew() {
+    public void blockNew() {
         if (game) {
+            gameLevelCheck();
             blockPlace = new Point(5, 1);
             Random generator = new Random();
             block = generator.nextInt(6);
@@ -254,9 +173,9 @@ public class Tetris extends JPanel {
         }
     }
 
-    private void blockDraw() {
+    public void blockDraw() {
         if (game) {
-            for (Point p : tetrisBlocks[block][orientation]) {
+            for (Point p : Tetraminos.tetrisBlocks[block][orientation]) {
                 table[p.x + blockPlace.x][p.y + blockPlace.y] = block + 2;
             }
             repaint();
@@ -264,16 +183,40 @@ public class Tetris extends JPanel {
         }
     }
 
-    private void gameOver() {
+    public void gameOver() {
         timer.stop();
         game = false;
 
 
     }
 
-    private boolean collisionTest(int x, int y, int orientation) {
 
-        for (Point p : tetrisBlocks[block][orientation]) {
+    public void gameLevelCheck() {
+        if (score > 1000) {
+            if (score > 2000) {
+                if (score > 3000) {
+                    if (score > 4000) {
+                        if (score > 5000) {
+                            level = 5;
+                        } else {
+                            level = 4;
+                        }
+                    } else {
+                        level = 3;
+                    }
+                } else {
+                    level = 2;
+                }
+            } else {
+                level = 1;
+
+            }
+        }
+    }
+
+    public boolean collisionTest(int x, int y, int orientation) {
+
+        for (Point p : Tetraminos.tetrisBlocks[block][orientation]) {
             if (table[p.x + x][p.y + y] != 0) {
                 return false;
             }
@@ -281,9 +224,9 @@ public class Tetris extends JPanel {
         return true;
     }
 
-    private void rotate() {
+    public void rotate() {
         if (game) {
-            for (Point p : tetrisBlocks[block][orientation]) {
+            for (Point p : Tetraminos.tetrisBlocks[block][orientation]) {
                 table[p.x + blockPlace.x][p.y + blockPlace.y] = 0;
             }
             int newOrientation = orientation + 1;
@@ -300,8 +243,8 @@ public class Tetris extends JPanel {
 
     }
 
-    private void placeOntoBottom() {
-        for (Point p : tetrisBlocks[block][orientation]) {
+    public void placeOntoBottom() {
+        for (Point p : Tetraminos.tetrisBlocks[block][orientation]) {
             table[blockPlace.x + p.x][blockPlace.y + p.y] = block + 2;
         }
         score += 5;
@@ -312,7 +255,7 @@ public class Tetris extends JPanel {
 
     }
 
-    private void checkForFullRows() {
+    public void checkForFullRows() {
         for (int h = 20; h > 0; h--) {
             for (int g = 1; g < 11; g++) {
                 if (table[g][h] != 0) {
@@ -329,7 +272,7 @@ public class Tetris extends JPanel {
 
     }
 
-    private void deleteRow(int row) {
+    public void deleteRow(int row) {
         for (int i = row; i > 1; i--) {
             for (int g = 1; g < 11; g++) {
                 table[g][i] = table[g][i - 1];
