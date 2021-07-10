@@ -29,6 +29,7 @@ public class Tetris extends JPanel {
 
         timer = new Timer(timerDelay, evt -> moveDown());
 
+
     }
 
     public static void main(String[] args) {
@@ -150,7 +151,7 @@ public class Tetris extends JPanel {
             }
         }
         g.setColor(Color.RED);
-        g.drawString("SCORE: " + score, fieldSize * 4, fieldSize / 2);
+        g.drawString("SCORE: " + score + "      lvl:" + level, fieldSize * 4, fieldSize / 2);
 
 
         if (!game) {
@@ -192,25 +193,21 @@ public class Tetris extends JPanel {
 
 
     public void gameLevelCheck() {
+        if (score > 500) {
+            level = 2;
+            timer.setDelay(750);
+        }
         if (score > 1000) {
-            if (score > 2000) {
-                if (score > 3000) {
-                    if (score > 4000) {
-                        if (score > 5000) {
-                            level = 5;
-                        } else {
-                            level = 4;
-                        }
-                    } else {
-                        level = 3;
-                    }
-                } else {
-                    level = 2;
-                }
-            } else {
-                level = 1;
-
-            }
+            level = 3;
+            timer.setDelay(500);
+        }
+        if (score > 2000) {
+            level = 4;
+            timer.setDelay(300);
+        }
+        if (score > 2500) {
+            level = 5;
+            timer.setDelay(200);
         }
     }
 

@@ -15,8 +15,7 @@ public class TetrisGui extends JFrame {
     final static int marginHorizontal = 14;
     public static int fieldSize;
     public static int score = 0;
-    public static int controlLevel = 1;
-    public int timerDelay;
+    public int timerDelay = 1000;
 
 
     public TetrisGui(int level) {
@@ -29,30 +28,6 @@ public class TetrisGui extends JFrame {
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-
-        switch ( level ) {
-            case 1:
-                timerDelay = 1000;
-                controlLevel = 1;
-                break;
-            case 2:
-                timerDelay = 500;
-                controlLevel = 2;
-                break;
-            case 3:
-                timerDelay = 250;
-                controlLevel = 3;
-                break;
-            case 4:
-                timerDelay = 150;
-                controlLevel = 4;
-                break;
-            case 5:
-                timerDelay = 75;
-                controlLevel = 5;
-                break;
-
-        }
 
         Tetris tetris = new Tetris(timerDelay);
         add(tetris);
